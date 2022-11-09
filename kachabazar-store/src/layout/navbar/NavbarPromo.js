@@ -109,6 +109,12 @@ const NavbarPromo = () => {
                         </div>
                       </a>
                     </Link>
+
+                    <Link href="/vendor-registrationform">
+                      <a className="font-serif mx-4 py-2 text-sm font-medium hover:text-emerald-600">
+                        Register As A Partner
+                      </a>
+                    </Link>
                   </Popover.Group>
                 </div>
               </div>

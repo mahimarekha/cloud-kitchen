@@ -62,7 +62,7 @@ const Checkout = () => {
                           label="First Name"
                           name="firstName"
                           type="text"
-                          placeholder="John"
+                          placeholder="Enter Your Name"
                         />
                         <Error errorName={errors.firstName} />
                       </div>
@@ -73,7 +73,7 @@ const Checkout = () => {
                           label="Last name"
                           name="lastName"
                           type="text"
-                          placeholder="Doe"
+                          placeholder="Enter Last Name"
                         />
                         <Error errorName={errors.lastName} />
                       </div>
@@ -84,7 +84,7 @@ const Checkout = () => {
                           label="Email address"
                           name="email"
                           type="email"
-                          placeholder="youremail@gmail.com"
+                          placeholder="Enter Your Emai ld"
                         />
                         <Error errorName={errors.email} />
                       </div>
@@ -95,7 +95,7 @@ const Checkout = () => {
                           label="Phone number"
                           name="contact"
                           type="tel"
-                          placeholder="+062-6532956"
+                          placeholder="Enter Your Phone Number"
                         />
 
                         <Error errorName={errors.contact} />
@@ -115,7 +115,7 @@ const Checkout = () => {
                           label="Street address"
                           name="address"
                           type="text"
-                          placeholder="123 Boulevard Rd, Beverley Hills"
+                          placeholder="Enter Your Address"
                         />
                         <Error errorName={errors.address} />
                       </div>
@@ -126,7 +126,7 @@ const Checkout = () => {
                           label="City"
                           name="city"
                           type="text"
-                          placeholder="Los Angeles"
+                          placeholder="Enter Your City"
                         />
                         <Error errorName={errors.city} />
                       </div>
@@ -134,10 +134,10 @@ const Checkout = () => {
                       <div className="col-span-6 sm:col-span-3 lg:col-span-2">
                         <InputArea
                           register={register}
-                          label="Country"
+                          label="State"
                           name="country"
                           type="text"
-                          placeholder="United States"
+                          placeholder="Enter Your State"
                         />
                         <Error errorName={errors.country} />
                       </div>
@@ -145,10 +145,10 @@ const Checkout = () => {
                       <div className="col-span-6 sm:col-span-3 lg:col-span-2">
                         <InputArea
                           register={register}
-                          label="ZIP / Postal"
+                          label="PIN code"
                           name="zipCode"
                           type="text"
-                          placeholder="2345"
+                          placeholder="Enter PIN code"
                         />
                         <Error errorName={errors.zipCode} />
                       </div>
@@ -160,14 +160,14 @@ const Checkout = () => {
                         <InputShipping
                           handleShippingCost={handleShippingCost}
                           register={register}
-                          value="FedEx"
+                          value="Shipping Cost"
                           time="Today"
-                          cost={60}
+                          cost={100}
                         />
                         <Error errorName={errors.shippingOption} />
                       </div>
 
-                      <div className="col-span-6 sm:col-span-3">
+                      {/* <div className="col-span-6 sm:col-span-3">
                         <InputShipping
                           handleShippingCost={handleShippingCost}
                           register={register}
@@ -176,13 +176,29 @@ const Checkout = () => {
                           cost={20}
                         />
                         <Error errorName={errors.shippingOption} />
-                      </div>
+                      </div> */}
                     </div>
                   </div>
-
                   <div className="form-group mt-12">
                     <h2 className="font-semibold font-serif text-base text-gray-700 pb-3">
-                      03. Payment Details
+                      03. Delivery Date
+                    </h2>
+                    <div className="grid grid-cols-6 gap-6">
+                      <div className="col-span-6 sm:col-span-3">
+                        <InputArea
+                          register={register}
+                          label="Delivery Date"
+                          name="deliveryDate"
+                          type="datetime-local"
+                         
+                        />
+                        <Error errorName={errors.deliveryDate} />
+                      </div>
+                     </div>
+                    </div>
+                  <div className="form-group mt-12">
+                    <h2 className="font-semibold font-serif text-base text-gray-700 pb-3">
+                      04. Payment Details
                     </h2>
                     {showCard && (
                       <div className="mb-3">

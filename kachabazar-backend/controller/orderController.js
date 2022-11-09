@@ -1,6 +1,7 @@
 const dayjs = require('dayjs');
 const Order = require('../models/Order');
-
+const VendorOrders = require('../models/VendorOrders');
+var ObjectId = require('mongodb').ObjectID;
 const getAllOrders = async (req, res) => {
   const { contact, status, page, limit, day } = req.query;
 
@@ -78,6 +79,32 @@ const getOrderById = async (req, res) => {
     });
   }
 };
+const updateOrderDetails = (req, res) => {
+  const newStatus = req.body.status;
+  console.log(req.body)
+  Order.updateOne(
+    {
+      _id: req.params.id,
+    },
+    {
+      $set: {
+        cart:req.body.cart,
+        isOrderAssign:req.body.isOrderAssign
+      },
+    },
+    (err) => {
+      if (err) {
+        res.status(500).send({
+          message: err.message,
+        });
+      } else {
+        res.status(200).send({
+          message: 'Order Updated Successfully!',
+        });
+      }
+    }
+  );
+};
 
 const updateOrder = (req, res) => {
   const newStatus = req.body.status;
@@ -103,6 +130,33 @@ const updateOrder = (req, res) => {
     }
   );
 };
+
+
+const updateVendorOrders = (req, res) => {
+  const newStatus = req.body.status;
+  VendorOrders.updateOne(
+    {
+      _id: req.params.id,
+    },
+    {
+      $set: {
+        status: newStatus,
+      },
+    },
+    (err) => {
+      if (err) {
+        res.status(500).send({
+          message: err.message,
+        });
+      } else {
+        res.status(200).send({
+          message: 'Vendor Order Updated Successfully!',
+        });
+      }
+    }
+  );
+};
+
 
 const deleteOrder = (req, res) => {
   Order.deleteOne({ _id: req.params.id }, (err) => {
@@ -154,6 +208,7 @@ const bestSellerProductChart = async (req, res) => {
     });
   }
 };
+ 
 
 const getDashboardOrders = async (req, res) => {
   const { page, limit } = req.query;
@@ -308,7 +363,58 @@ const getDashboardOrders = async (req, res) => {
     });
   }
 };
+const addOrder = async (req, res) => {
+  try {
+    
+    // const newVendorOrder = new VendorOrders({
+    //   ...req.body,
+     
+    // });
+    const vendorOrder = await VendorOrders.insertMany(req.body);
+    res.status(201).send(vendorOrder);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+const getVendorOrderById = async (req, res) => {
+  let preparePost ={};
+  if(req.params.orderId){
+    preparePost = {...preparePost,...{"orderId" : ObjectId(req.params.orderId)}}
+  }
+ 
+  try {
+    const vendorOrders = await VendorOrders.find(preparePost)
+    .populate("orderId",{name:1, discount:1, address : 1, contact:1, title:1, deliveryDate:1, originalPrice:1, quantity:1, shippingOption : 1,paymentMethod : 1, invoice : 1,})
+    .populate("vendorId",{_id:1, orgName:1, fullName:1})
+    .populate("user", { name: 1, _id: 1,phone:1 });
+    res.send(vendorOrders);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
 
+const getOrdersByVendorId = async (req, res) => {
+  let preparePost ={};
+  if(req.params.vendorId){
+    preparePost = {...preparePost,...{"vendorId" : ObjectId(req.params.vendorid)}}
+  }
+ 
+  try {
+    const vendorOrders = await VendorOrders.find({"vendorId" :req.params.vendorid})
+    .populate("orderId",{name:1, discount:1, address : 1, contact:1, title:1, deliveryDate:1, originalPrice:1, quantity:1, shippingOption : 1,paymentMethod : 1, invoice : 1,})
+    .populate("vendorId",{_id:1, orgName:1, fullName:1})
+    .populate("user", { name: 1, _id: 1,phone:1 });
+    res.send(vendorOrders);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
 module.exports = {
   getAllOrders,
   getOrderById,
@@ -317,4 +423,9 @@ module.exports = {
   deleteOrder,
   bestSellerProductChart,
   getDashboardOrders,
+  addOrder,
+  getVendorOrderById,
+  updateOrderDetails,
+  getOrdersByVendorId,
+  updateVendorOrders
 };

@@ -98,7 +98,7 @@ const useCheckoutSubmit = () => {
     Cookies.set('shippingAddress', JSON.stringify(data));
     setIsCheckoutSubmit(true);
     setError('');
-
+    
     let orderInfo = {
       name: `${data.firstName} ${data.lastName}`,
       address: data.address,
@@ -115,6 +115,7 @@ const useCheckoutSubmit = () => {
       shippingCost: shippingCost,
       discount: discountAmount,
       total: total,
+      deliveryDate:data.deliveryDate
     };
 
     if (data.paymentMethod === 'Card') {

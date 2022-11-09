@@ -1,5 +1,5 @@
 const Product = require('../models/Product');
-
+const Vendor = require('../models/Vendor');
 const addProduct = async (req, res) => {
   try {
     const newProduct = new Product(req.body);
@@ -27,11 +27,37 @@ const addAllProducts = async (req, res) => {
     });
   }
 };
-
+const prepareJSON =(product)=>{
+  return {
+    "price":product.price,
+"discount":product.discount,
+"flashSale":product.flashSale,
+"status":product.status,
+"_id":product._id,
+"categoryId":product.categoryId,
+"title":product.title,
+"originalPrice":product.originalPrice,
+"quantity":product.quantity,
+description:product.description,
+image:product.image,
+createdAt:product.createdAt,
+updatedAt:product.updatedAt,
+unit:product.unit
+  }
+}
+const addVendorDetails = (productList, vendorList) => {
+  return productList.map(product => {
+    const vendorDetails = vendorList.filter(vendor => vendor.categoryId.includes(product.categoryId));
+    return { ...prepareJSON(product), ...{ vendorDetails: vendorDetails } };
+  });
+  ;
+}
 const getShowingProducts = async (req, res) => {
   try {
     const products = await Product.find({ status: true }).sort({ _id: -1 });
-    res.send(products);
+    const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+    const finalProductList = addVendorDetails(products, vendor);
+    res.send(finalProductList);
   } catch (err) {
     res.status(500).send({
       message: err.message,
@@ -44,7 +70,9 @@ const getDiscountedProducts = async (req, res) => {
     const products = await Product.find({ discount: { $gt: 5 } }).sort({
       _id: -1,
     });
-    res.send(products);
+    const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+    const finalProductList = addVendorDetails(products, vendor);
+    res.send(finalProductList);
   } catch (err) {
     res.status(500).send({
       message: err.message,
@@ -81,16 +109,20 @@ const getAllProducts = async (req, res) => {
 
   try {
     const totalDoc = await Product.countDocuments(queryObject);
+   
     const products = await Product.find(queryObject).populate("categoryId")
       .sort(price ? { price: sortPrice } : { _id: -1 })
       .skip(skip)
       .limit(limits);
+      const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+      const finalProductList = addVendorDetails(products, vendor);
 
     res.send({
-      products,
+      finalProductList,
       totalDoc,
       limits,
       pages,
+      vendor,
     });
   } catch (err) {
     res.status(500).send({
@@ -104,8 +136,10 @@ const getStockOutProducts = async (req, res) => {
     const products = await Product.find({ quantity: { $lt: 1 } }).sort({
       _id: -1,
     });
+    const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+    const finalProductList = addVendorDetails(products, vendor);
 
-    res.send(products);
+    res.send(finalProductList);
   } catch (err) {
     res.status(500).send({
       message: err.message,
@@ -114,9 +148,19 @@ const getStockOutProducts = async (req, res) => {
 };
 
 const getProductBySlug = async (req, res) => {
+  console.log("getProductBySlug")
   try {
-    const product = await Product.findOne({ slug: req.params.slug });
-    res.send(product);
+    const product = await Product.find({ _id: req.params.slug });
+   
+     if(product){
+      const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+      const finalProductList = addVendorDetails(product, vendor);
+  
+      res.send(finalProductList[0]);
+     }else{
+      res.send(null);
+     }
+    
   } catch (err) {
     res.status(500).send({
       message: `Slug problem, ${err.message}`,
@@ -125,6 +169,7 @@ const getProductBySlug = async (req, res) => {
 };
 
 const getProductById = async (req, res) => {
+  console.log("getProductById")
   try {
     const product = await Product.findById(req.params.id);
     res.send(product);

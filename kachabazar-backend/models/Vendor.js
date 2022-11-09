@@ -4,6 +4,7 @@ const vendorSchema = new mongoose.Schema(
     {
         orgName: {
             type: String,
+            unique:true,
             required: true,
         },
         fullName: {
@@ -11,22 +12,32 @@ const vendorSchema = new mongoose.Schema(
             required: true,
         },
         mobileNumber: {
-            type: Number,
+            type: String,
+            unique:true,
             required: true,
         },
         altMobileNumber: {
-            type: Number,
+            type: String,
             required: false,
         },
         address: {
             type: String,
             required: true,
         },
+        
         pincode: {
             type: Number,
             required: true,
         },
         geoLocation: {
+            type: String,
+            required: true,
+        },
+        password:{
+            type: String,
+            required: true,
+        },
+        email:{
             type: String,
             required: true,
         },

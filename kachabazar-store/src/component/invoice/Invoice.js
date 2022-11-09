@@ -123,7 +123,7 @@ const Invoice = ({ data, printRef }) => {
               Shipping Cost
             </span>
             <span className="text-sm text-gray-500 font-semibold font-serif block">
-              ${Math.round(data.shippingCost)}.00
+            &#8377;{Math.round(data.shippingCost)}.00
             </span>
           </div>
           <div className="mb-3 md:mb-0 lg:mb-0  flex flex-col sm:flex-wrap">
@@ -131,7 +131,7 @@ const Invoice = ({ data, printRef }) => {
               Discount
             </span>
             <span className="text-sm text-gray-500 font-semibold font-serif block">
-              ${Math.round(data.discount)}.00
+            &#8377;{Math.round(data.discount)}.00
             </span>
           </div>
           <div className="flex flex-col sm:flex-wrap">
@@ -139,7 +139,7 @@ const Invoice = ({ data, printRef }) => {
               Total Amount
             </span>
             <span className="text-2xl font-serif font-bold text-red-500 block">
-              ${Math.round(data.total)}.00
+            &#8377;{Math.round(data.total)}.00
             </span>
           </div>
         </div>

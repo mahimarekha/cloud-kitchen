@@ -1,26 +1,27 @@
 const express = require('express');
+const { isAuth, isAdmin } = require('../config/auth');
 const router = express.Router();
 const {
     addLocality,addAllLocality,getAllLocality,getLocalityById,updateLocality,deleteLocality,getLocalityByCityId
 } = require('../controller/localityController');
 
 //add a coupon
-router.post('/add', addLocality);
+router.post('/add', isAuth,addLocality);
 
 router.post('/getLocalityByCityId', getLocalityByCityId);
 //add multiple coupon
-router.post('/all', addAllLocality);
+router.post('/all', isAuth,addAllLocality);
 
 //get all coupon
-router.get('/', getAllLocality);
+router.get('/',isAuth, getAllLocality);
 
 //get a coupon
-router.get('/:id', getLocalityById);
+router.get('/:id',isAuth, getLocalityById);
 
 //update a coupon
-router.put('/:id', updateLocality);
+router.put('/:id', isAuth,updateLocality);
 
 //delete a coupon
-router.delete('/:id', deleteLocality);
+router.delete('/:id',isAuth, deleteLocality);
 
 module.exports = router;

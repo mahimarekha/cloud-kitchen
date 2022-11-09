@@ -64,11 +64,7 @@ const ProductScreen = ({ product, relatedProduct }) => {
                   </li>
                   <li className="text-sm pl-1 transition duration-200 ease-in cursor-pointer hover:text-emerald-500 font-semibold ">
                     <Link
-                      href={`/search?category=${product.children
-                        .toLowerCase()
-                        .replace('&', '')
-                        .split(' ')
-                        .join('-')}`}
+                      href={`/search?category=${product.categoryId}`}
                     >
                       <a>{product.children}</a>
                     </Link>
@@ -289,8 +285,8 @@ const ProductScreen = ({ product, relatedProduct }) => {
 
 export const getStaticProps = async (context) => {
   const { slug } = context.params;
-  // const product = await ProductServices.getProductBySlug(slug);
-  // const products = await ProductServices.getShowingProducts();
+  //  const product = await ProductServices.getProductBySlug(slug);
+  //  const products = await ProductServices.getShowingProducts();
 
   const [product, products] = await Promise.all([
     ProductServices.getProductBySlug(slug),
@@ -299,7 +295,8 @@ export const getStaticProps = async (context) => {
 
   let relatedProduct = [];
   if (slug) {
-    const selectProduct = products.find((product) => product.slug === slug);
+    const selectProduct = products.find((product) => product._id === slug);
+    console.log(selectProduct)
     relatedProduct = products.filter(
       (product) => product.children === selectProduct.children
     );
@@ -318,7 +315,7 @@ export const getStaticPaths = async () => {
   const products = await ProductServices.getShowingProducts();
 
   const paths = products.map((product) => ({
-    params: { slug: product.slug },
+    params: { slug: product._id },
   }));
 
   return { paths, fallback: true };

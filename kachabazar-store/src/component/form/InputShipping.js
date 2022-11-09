@@ -18,7 +18,7 @@ const InputShipping = ({ register, value, time, cost, handleShippingCost }) => {
                 <p className="text-xs text-gray-500 font-medium">
                   Delivery: {time}{' '}
                   <span className="font-medium text-gray-600">
-                    Cost : ${cost}.00
+                    Cost : &#8377;{cost}.00
                   </span>
                 </p>
               </div>

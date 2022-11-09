@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-
+const path = require('path');
 const connectDB = require('../config/db');
 const productRoutes = require('../routes/productRoutes');
 
@@ -24,14 +24,18 @@ const app = express();
 // See: https://github.com/nfriedly/express-rate-limit
 // app.enable('trust proxy');
 app.set('trust proxy', 1);
-
+app.use(express.static("public"));
+app.use(express.static("client"));
 app.use(express.json({ limit: '4mb' }));
 app.use(helmet());
 app.use(cors());
 
 //root route
 app.get('/', (req, res) => {
-  res.send('App works properly!');
+  res.sendFile(path.join(__dirname,"public","index.html"));
+});
+app.use('/client', (req, res) => {
+  res.sendFile(path.join(__dirname,"client","index.html"));
 });
 
 //this for route will need for store front, also for admin dashboard
@@ -46,9 +50,9 @@ app.use('/api/order/', isAuth, userOrderRoutes);
 app.use('/api/admin/', adminRoutes);
 app.use('/api/orders/', isAuth, orderRoutes);
 
-app.use('/api/city',isAuth,cityRoutes);
-app.use('/api/locality',isAuth,localityRouter);
-app.use('/api/vendor',isAuth,vendorRouter);
+app.use('/api/city',cityRoutes);
+app.use('/api/locality',localityRouter);
+app.use('/api/vendor',vendorRouter);
 // Use express's default error handling middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);

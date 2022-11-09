@@ -8,7 +8,13 @@ const {
   deleteOrder,
   bestSellerProductChart,
   getDashboardOrders,
-  getRecentOrders,
+  addOrder,
+  getVendorOrderById,
+  updateOrderDetails,
+  getOrdersByVendorId,
+  updateVendorOrders,
+  // getRecentOrders,
+ 
 } = require('../controller/orderController');
 
 //get all orders
@@ -28,8 +34,16 @@ router.get('/:id', getOrderById);
 
 //update a order
 router.put('/:id', updateOrder);
+router.put('/vendor/:id', updateVendorOrders);
+
+router.put('/orderdetails/:id', updateOrderDetails);
 
 //delete a order
 router.delete('/:id', deleteOrder);
 
+router.post('/addvendororders', addOrder);
+
+router.get('/vendororder/:orderId', getVendorOrderById);
+
+router.get('/order/:vendorid', getOrdersByVendorId);
 module.exports = router;

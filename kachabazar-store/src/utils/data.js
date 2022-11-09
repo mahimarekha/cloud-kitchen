@@ -54,6 +54,11 @@ const pages = [
     icon: HiOutlinePhoneIncoming,
   },
   {
+    title: 'Register As A Partner',
+    href: '/vendor-registrationform',
+    icon: HiOutlineUserGroup,
+  },
+  {
     title: 'Privacy Policy',
     href: '/privacy-policy',
     icon: HiOutlineShieldCheck,
@@ -145,7 +150,7 @@ const featurePromo = [
   {
     id: 1,
     title: 'Free Shipping',
-    info: 'From $500.00',
+    info: 'From &#8377;500.00',
     icon: FiTruck,
   },
   {

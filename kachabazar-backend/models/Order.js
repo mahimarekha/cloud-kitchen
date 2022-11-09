@@ -68,13 +68,21 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    deliveryDate:{
+      type: String,
+      required: false,
+    },
+    isOrderAssign: {
+      type: Boolean
+  },
+
     cardInfo: {
       type: Object,
       required: false,
     },
     status: {
       type: String,
-      enum: ['Pending', 'Processing', 'Delivered'],
+      enum: ['Pending', 'Processing', 'Delivered', 'Rejected'],
     },
   },
   {
