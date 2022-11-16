@@ -23,13 +23,14 @@ const useCheckoutSubmit = () => {
   const [total, setTotal] = useState('');
   const [couponInfo, setCouponInfo] = useState({});
   const [minimumAmount, setMinimumAmount] = useState(0);
+  const [taxAmount, setTaxAmount] = useState(0);
   const [showCard, setShowCard] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [discountProductType, setDiscountProductType] = useState('');
   const [isCheckoutSubmit, setIsCheckoutSubmit] = useState(false);
-
+// const [calculateDistance, setCalculateDistance] =useState('');
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
@@ -45,7 +46,12 @@ const useCheckoutSubmit = () => {
 
   const { data } = useAsync(CouponServices.getAllCoupons);
 
+
+
+
+
   useEffect(() => {
+    calculateDistance();
     if (Cookies.get('couponInfo')) {
       const coupon = JSON.parse(Cookies.get('couponInfo'));
       setCouponInfo(coupon);
@@ -70,11 +76,18 @@ const useCheckoutSubmit = () => {
       0
     );
     let totalValue = '';
-    let subTotal = (cartTotal + shippingCost).toFixed(2);
+    let taxAmount= cartTotal/100*5;
+    
+    let subTotal = (cartTotal + shippingCost + taxAmount).toFixed(2);
     let discountAmount = discountProductTotal * (discountPercentage / 100);
     totalValue = subTotal - discountAmount;
+
+    if(cartTotal === 0){
+      handleShippingCost(0);
+    }
     setDiscountAmount(discountAmount);
     setTotal(totalValue);
+    setTaxAmount(taxAmount);
   }, [cartTotal, shippingCost, discountPercentage]);
 
   //if not login then push user to home page
@@ -115,6 +128,7 @@ const useCheckoutSubmit = () => {
       shippingCost: shippingCost,
       discount: discountAmount,
       total: total,
+      tax:taxAmount,
       deliveryDate:data.deliveryDate
     };
 
@@ -162,6 +176,50 @@ const useCheckoutSubmit = () => {
         });
     }
   };
+
+
+const calculateDistance = () => {
+ 
+  const locationDetails = [];
+ items.forEach(items => {
+    
+    let location = (items.vendorDetails || []) .map(vendor => {
+     return {
+     vendId:vendor._id,
+     vendorname:vendor.orgName,
+     geolocation: { "latitude": vendor.geoLocation.split(",")[0], "longitude": vendor.geoLocation.split(",")[1]}
+    }
+    });
+    locationDetails.push(...locationDetails,...location);
+    // const vendorDetails = vendorList.filter(vendor => vendor.categoryId.includes(product.categoryId));
+    // return { ...prepareJSON(product), ...{ vendorDetails: vendorDetails } };
+  })
+ 
+  const key = 'vendId';
+const arrayUniqueByKey = [...new Map(locationDetails.map(item =>
+  [item[key], item])).values()];
+
+if(arrayUniqueByKey.length){
+  OrderServices.calculateDistance({
+    "startingPoint":{ "latitude": 17.548957, "longitude": 78.3604075 },
+    "endingPoint":arrayUniqueByKey
+  }).then((res)=>{
+  
+   if(res && res.price) {
+   handleShippingCost(res.price)
+   }
+  
+  
+  }).catch((err) => {
+    setError(err.message);
+  });
+}
+
+}
+
+
+
+
 
   const handlePaymentWithStripe = async (order) => {
     try {
@@ -273,6 +331,8 @@ const useCheckoutSubmit = () => {
     items,
     cartTotal,
     isCheckoutSubmit,
+    calculateDistance,
+    taxAmount
   };
 };
 

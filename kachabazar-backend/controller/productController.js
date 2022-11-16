@@ -38,6 +38,7 @@ const prepareJSON =(product)=>{
 "title":product.title,
 "originalPrice":product.originalPrice,
 "quantity":product.quantity,
+"pricing":product.pricing,
 description:product.description,
 image:product.image,
 createdAt:product.createdAt,
@@ -55,7 +56,7 @@ const addVendorDetails = (productList, vendorList) => {
 const getShowingProducts = async (req, res) => {
   try {
     const products = await Product.find({ status: true }).sort({ _id: -1 });
-    const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
+    const vendor = await Vendor.find({}, { cityId: 1, localityId: 1, categoryId: 1, _id: 1, orgName: 1, fullName: 1, mobileNumber: 1, geoLocation:1 }).populate("cityId", { cityName: 1, _id: 1 }).populate("localityId", { area: 1, _id: 1 });
     const finalProductList = addVendorDetails(products, vendor);
     res.send(finalProductList);
   } catch (err) {
@@ -199,6 +200,7 @@ const updateProduct = async (req, res) => {
       product.status = req.body.status;
       product.title = req.body.title;
       product.tag = req.body.tag;
+      product.pricing = req.body.pricing;
       await product.save();
       res.send({ data: product, message: 'Product updated successfully!' });
     }

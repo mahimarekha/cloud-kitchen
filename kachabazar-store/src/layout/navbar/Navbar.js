@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { useCart } from 'react-use-cart';
 import { IoSearchOutline } from 'react-icons/io5';
 import { FiShoppingCart, FiUser, FiBell } from 'react-icons/fi';
-
+import {GoLocation}  from 'react-icons/go';
 //internal import
 import NavbarPromo from '@layout/navbar/NavbarPromo';
 import { UserContext } from '@context/UserContext';
@@ -65,6 +65,10 @@ const Navbar = () => {
                 />
               </a>
             </Link>
+
+            <h1 style={{ 'color': 'white', 'fontSize': '20px' }}>Bachupally</h1>
+            <GoLocation className="w-6 h-6 drop-shadow-xl"  style={{ 'color': 'white', 'fontSize': '20px' }} />
+            
             <div className="w-full transition-all duration-200 ease-in-out lg:flex lg:max-w-[520px] xl:max-w-[750px] 2xl:max-w-[900px] md:mx-12 lg:mx-4 xl:mx-0">
               <div className="w-full flex flex-col justify-center flex-shrink-0 relative z-30">
                 <div className="flex flex-col mx-auto w-full">
@@ -80,6 +84,9 @@ const Navbar = () => {
                         placeholder="Search "
                       />
                     </label>
+
+                   
+
                     <button
                       aria-label="Search"
                       type="submit"

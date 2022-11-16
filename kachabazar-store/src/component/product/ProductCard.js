@@ -6,18 +6,27 @@ import { IoBagAddSharp, IoAdd, IoRemove } from 'react-icons/io5';
 import Price from '@component/common/Price';
 import Discount from '@component/common/Discount';
 import ProductModal from '@component/modal/ProductModal';
+import { indexOf } from 'next-pwa/cache';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, edit }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const { items, addItem, updateItemQuantity, inCart } = useCart();
 
   const handleAddItem = (p) => {
+    console.log(items)
     const newItem = {
       ...p,
       id: p._id,
     };
+    console.log(newItem)
     addItem(newItem);
   };
+
+  const selectUnit = (event, pricing, productId) => {
+
+  edit(pricing[event.target.value], productId)
+
+  }
 
   return (
     <>
@@ -59,6 +68,17 @@ const ProductCard = ({ product }) => {
 
           <div className="flex justify-between items-center text-heading text-sm sm:text-base space-s-2 md:text-base lg:text-xl">
             <Price product={product} card={true} />
+           <select  onChange={(e) =>selectUnit(e,product.pricing, product._id)}  className="py-0 text-sm font-serif font-medium block rounded border-0 bg-white pr-10 cursor-pointer focus:ring-0"
+                    >
+                      {(product.pricing || []).map((productpricing, i) => (
+                         <option className="px-3" selected={productpricing.isDefaultPrice} value={i} >
+                            {productpricing.quantity}
+                       </option>
+                      ))
+                        }
+            </select>
+           
+
             {inCart(product._id) ? (
               <div>
                 {items.map(

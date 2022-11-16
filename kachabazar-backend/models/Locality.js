@@ -14,6 +14,10 @@ const localitySchema = new mongoose.Schema(
     status: {
         type: Boolean,
         required: true,
+      },
+      geo:{
+        type: String,
+        required: true,
       }
   },
   {

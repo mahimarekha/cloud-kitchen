@@ -10,17 +10,54 @@ import ProductCard from '@component/product/ProductCard';
 import CategoryCarousel from '@component/carousel/CategoryCarousel';
 import { SidebarContext } from '@context/SidebarContext';
 import Loading from '@component/preloader/Loading';
+import { useCart } from 'react-use-cart';
 
 const Search = ({ products }) => {
   const { isLoading, setIsLoading } = useContext(SidebarContext);
+  const { items, addItem, updateItemQuantity, inCart } = useCart();
 
   const [visibleProduct, setVisibleProduct] = useState(18);
   const { productData, setSortedField } = useFilter(products);
 
   useEffect(() => {
     setIsLoading(false);
+    console.log(items)
+    console.log(products)
+    updateCartDetails();
   }, [products]);
+ 
 
+  const updateCartDetails = ()=>{
+    const productList=  products.map((product) => {
+        const cartItems = items.find(cart=>cart._id === product._id);
+      if (cartItems && cartItems._id === product._id) {
+        product.originalPrice =  cartItems.originalPrice;
+        product.unit = cartItems.unit;
+        product.price =  cartItems.price;
+      }
+
+      return product;
+    })
+   setSortedField(productList)
+  }
+  const edit = (event, productId) => {
+
+
+  const productList=  productData.map((product) => {
+     
+      if (productId === product._id) {
+        product.originalPrice =  Number(event.amount);
+        product.unit = event.quantity;
+        product.price =  Number(event.amount);
+      }
+
+      return product;
+    })
+
+   setSortedField(productList)
+  
+    
+    }
   return (
     <Layout title="Search" description="This is search page">
       <div className="mx-auto max-w-screen-2xl px-3 sm:px-10">
@@ -76,9 +113,9 @@ const Search = ({ products }) => {
                 <Loading loading={isLoading} />
               ) : (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-2 md:gap-3 lg:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3 lg:gap-3">
                     {productData?.slice(0, visibleProduct).map((product, i) => (
-                      <ProductCard key={i + 1} product={product} />
+                      <ProductCard key={i + 1} product={product} edit={edit} />
                     ))}
                   </div>
                   {productData.length > visibleProduct && (

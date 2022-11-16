@@ -2,6 +2,7 @@
 const Locality = require('../models/Locality');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
+const geolib = require('geolib');
 dayjs.extend(utc);
 
 const addLocality = async (req, res) => {
@@ -62,6 +63,7 @@ const addLocality = async (req, res) => {
         locality.cityId = req.body.cityId;
         locality.area = req.body.area;
         locality.status = req.body.status;
+        locality.geo = req.body.geo;
         await locality.save();
         res.send({ message: 'Locality Updated Successfully!' });
       }
@@ -82,6 +84,22 @@ const addLocality = async (req, res) => {
       }
     });
   };
+
+  const calculateDistance=(req, res)=>{ 
+    const endpoint = req.body.endingPoint;
+    let kilometer = [];
+    endpoint.forEach(end => {
+      const calculate= geolib.getDistance(req.body.startingPoint, end.geolocation);
+      kilometer.push(calculate/1000);
+      
+     
+    })
+    const finalkm = Math.max(...kilometer);
+   
+  res.status(200).send({
+    kilometer : finalkm, price : finalkm*25
+  });
+  }
   module.exports = {
     addLocality,
     addAllLocality,
@@ -89,5 +107,6 @@ const addLocality = async (req, res) => {
     getLocalityById,
     updateLocality,
     deleteLocality,
-    getLocalityByCityId
+    getLocalityByCityId,
+    calculateDistance
   };

@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    pricing:[{}],
 
     // slug: {
     //   type: String,

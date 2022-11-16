@@ -15,6 +15,11 @@ const OrderServices = {
   getOrderById(id, body) {
     return requests.get(`/order/${id}`, body);
   },
+
+  calculateDistance(body) {
+    return requests.post('/locality/calculate', body);
+  },
+
 };
 
 export default OrderServices;

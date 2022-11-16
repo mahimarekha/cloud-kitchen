@@ -41,6 +41,7 @@ const Checkout = () => {
     items,
     cartTotal,
     isCheckoutSubmit,
+    taxAmount,
   } = useCheckoutSubmit();
 
   return (
@@ -333,6 +334,15 @@ const Checkout = () => {
                   &#8377;{cartTotal.toFixed(2)}
                   </span>
                 </div>
+
+
+                <div className="flex items-center py-2 text-sm w-full font-semibold text-gray-500 last:border-b-0 last:text-base last:pb-0">
+                  GST (5%)
+                  <span className="ml-auto flex-shrink-0 text-gray-800 font-bold">
+                  &#8377;{taxAmount.toFixed(2)}
+                  </span>
+                </div>
+
                 <div className="flex items-center py-2 text-sm w-full font-semibold text-gray-500 last:border-b-0 last:text-base last:pb-0">
                   Shipping Cost
                   <span className="ml-auto flex-shrink-0 text-gray-800 font-bold">

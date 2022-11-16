@@ -2,7 +2,8 @@ const express = require('express');
 const { isAuth, isAdmin } = require('../config/auth');
 const router = express.Router();
 const {
-    addLocality,addAllLocality,getAllLocality,getLocalityById,updateLocality,deleteLocality,getLocalityByCityId
+    addLocality,addAllLocality,getAllLocality,getLocalityById,updateLocality,deleteLocality,
+    getLocalityByCityId,calculateDistance
 } = require('../controller/localityController');
 
 //add a coupon
@@ -24,4 +25,6 @@ router.put('/:id', isAuth,updateLocality);
 //delete a coupon
 router.delete('/:id',isAuth, deleteLocality);
 
+//calculate a coupon
+router.post('/calculate', calculateDistance);
 module.exports = router;

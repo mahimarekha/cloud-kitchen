@@ -38,7 +38,11 @@ const useAddToCart = () => {
   };
 
   const handleIncreaseQuantity = (item) => {
-    const result = products?.find((p) => p._id === item.id);
+    const result = products?.find((p) => {
+      console.log(p._id)
+     return p._id === item._id;
+    });
+
     if (result) {
       if (item?.quantity < result?.quantity) {
         updateItemQuantity(item.id, item.quantity + 1);
