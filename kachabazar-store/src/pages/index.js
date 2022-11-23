@@ -1,8 +1,8 @@
 import useSessionstorage from '@rooks/use-sessionstorage';
 import { SidebarContext } from '@context/SidebarContext';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect,useState } from 'react';
 import { useRouter } from 'next/router';
-
+import useFilter from '@hooks/useFilter';
 //internal import
 import Layout from '@layout/Layout';
 import Banner from '@component/banner/Banner';
@@ -14,21 +14,85 @@ import ProductCard from '@component/product/ProductCard';
 import MainCarousel from '@component/carousel/MainCarousel';
 import FeatureCategory from '@component/category/FeatureCategory';
 import Loading from '@component/preloader/Loading';
-
+import { useCart } from 'react-use-cart';
 const Home = ({ products, popularProducts, discountProducts }) => {
   const router = useRouter();
 
   const [value, set] = useSessionstorage('products', products);
   const { isLoading, setIsLoading } = useContext(SidebarContext);
-
+  const [popularProductData, setpopularProductData ] = useState(popularProducts);
+  const { items, addItem, updateItemQuantity, inCart } = useCart();
   useEffect(() => {
     if (router.asPath === '/') {
       setIsLoading(false);
     } else {
       setIsLoading(false);
     }
+    if(items.length>0){
+      updateCartDetails();
+    }
+ 
   }, [router]);
+  const updateCartDetails = ()=>{
+    const productList=  popularProducts.map((product) => {
+        const cartItems = items.find(cart=>cart._id === product._id);
+      if (cartItems && cartItems._id === product._id) {
+        product.originalPrice =  cartItems.originalPrice;
+        product.unit = cartItems.unit;
+        product.price =  cartItems.price;
+      }
 
+      return product;
+    })
+
+    const productDiscountList=  discountProducts.map((product) => {
+      const cartItems = items.find(cart=>cart._id === product._id);
+    if (cartItems && cartItems._id === product._id) {
+      product.originalPrice =  cartItems.originalPrice;
+      product.unit = cartItems.unit;
+      product.price =  cartItems.price;
+    }
+
+    return product;
+  })
+   //setSortedField(productList)
+   setpopularProductData(productList)
+  }
+
+  const updatePopularProduct = (event, productId) => {
+
+    const productList =  popularProducts.map((product) => {
+        if (productId === product._id) {
+          product.originalPrice =  Number(event.amount);
+          product.unit = event.quantity;
+          product.price =  Number(event.amount);
+        }
+        return product;
+      })
+      console.log(productList);
+    
+      setpopularProductData(productList)
+  
+
+      }
+
+
+      const updateDiscountProduct = (event, productId) => {
+
+        const productList =  discountProducts.map((product) => {
+            if (productId === product._id) {
+              product.originalPrice =  Number(event.amount);
+              product.unit = event.quantity;
+              product.price =  Number(event.amount);
+            }
+            return product;
+          })
+          console.log(productList);
+        
+          setpopularProductData(productList)
+      
+    
+          }
   return (
     <>
       {isLoading ? (
@@ -89,7 +153,7 @@ const Home = ({ products, popularProducts, discountProducts }) => {
                 <div className="w-full">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3 lg:gap-3">
                     {popularProducts?.slice(0, 18).map((product) => (
-                      <ProductCard key={product._id} product={product} />
+                      <ProductCard key={product._id} product={product} edit={updatePopularProduct} />
                     ))}
                   </div>
                 </div>
@@ -126,7 +190,7 @@ const Home = ({ products, popularProducts, discountProducts }) => {
                 <div className="w-full">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3 lg:gap-3">
                     {discountProducts?.slice(0, 18).map((product) => (
-                      <ProductCard key={product._id} product={product} />
+                      <ProductCard key={product._id} product={product} edit={updateDiscountProduct}  />
                     ))}
                   </div>
                 </div>
@@ -144,7 +208,7 @@ export const getStaticProps = async () => {
 
   const popularProducts = products.filter((p) => p.discount === 0);
   const discountProducts = products.filter((p) => p.discount >= 5);
-
+console.log("getStaticProps")
   return {
     props: {
       products: products,

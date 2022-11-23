@@ -62,6 +62,7 @@ const useCheckoutSubmit = () => {
 
   //remove coupon if total value less then minimum amount of coupon
   useEffect(() => {
+    
     if (minimumAmount - discountAmount > total || isEmpty) {
       setDiscountPercentage(0);
       Cookies.remove('couponInfo');
@@ -79,9 +80,10 @@ const useCheckoutSubmit = () => {
     let taxAmount= cartTotal/100*5;
     
     let subTotal = (cartTotal + shippingCost + taxAmount).toFixed(2);
-    let discountAmount = discountProductTotal * (discountPercentage / 100);
+    let discountAmount = cartTotal * (discountPercentage / 100);
     totalValue = subTotal - discountAmount;
 
+    
     if(cartTotal === 0){
       handleShippingCost(0);
     }
@@ -214,13 +216,7 @@ if(arrayUniqueByKey.length){
     setError(err.message);
   });
 }
-
 }
-
-
-
-
-
   const handlePaymentWithStripe = async (order) => {
     try {
       // console.log('try goes here!', order);
@@ -235,7 +231,6 @@ if(arrayUniqueByKey.length){
               card: elements.getElement(CardElement),
             },
           });
-
           const orderData = {
             ...order,
             cardInfo: res,
@@ -268,46 +263,68 @@ if(arrayUniqueByKey.length){
     }
   };
 
+  
   const handleShippingCost = (value) => {
     setShippingCost(value);
   };
-
   const handleCouponCode = (e) => {
     e.preventDefault();
 
-    if (!couponRef.current.value) {
-      notifyError('Please Input a Coupon Code!');
-      return;
-    }
-    const result = data.filter(
-      (coupon) => coupon.couponCode === couponRef.current.value
-    );
+    const categoryItems = items.map(category => {
+      return category.categoryId;
+    })
 
-    if (result.length < 1) {
-      notifyError('Please Input a Valid Coupon!');
-      return;
-    }
+    CouponServices.applyCoupon(
+      {"couponCode":couponRef.current.value,"minimumAmount":cartTotal, "categoryId":categoryItems}).then((res) => {
+        notifySuccess(
+          `Your Coupon ${res[0].title} is Applied!`
+        );
+        setMinimumAmount(res[0]?.minimumAmount);
+        setDiscountProductType(res[0].productType);
+        setDiscountPercentage(res[0].discountPercentage);
+        dispatch({ type: 'SAVE_COUPON', payload: res[0] });
+        Cookies.set('couponInfo', JSON.stringify(res[0]));
+     
 
-    if (dayjs().isAfter(dayjs(result[0]?.endTime))) {
-      notifyError('This coupon is not valid!');
-      return;
-    }
+    }).catch((err) => {
+     // debugger
+      //console.log(err.response.data.message)
+      notifyError(err.response.data.message);
+    });
 
-    if (total < result[0]?.minimumAmount) {
-      notifyError(
-        `Minimum ${result[0].minimumAmount} USD required for Apply this coupon!`
-      );
-      return;
-    } else {
-      notifySuccess(
-        `Your Coupon ${result[0].title} is Applied on ${result[0].productType}!`
-      );
-      setMinimumAmount(result[0]?.minimumAmount);
-      setDiscountProductType(result[0].productType);
-      setDiscountPercentage(result[0].discountPercentage);
-      dispatch({ type: 'SAVE_COUPON', payload: result[0] });
-      Cookies.set('couponInfo', JSON.stringify(result[0]));
-    }
+    // if (!couponRef.current.value) {
+    //   notifyError('Please Input a Coupon Code!');
+    //   return;
+    // }
+    // const result = data.filter(
+    //   (coupon) => coupon.couponCode === couponRef.current.value
+    // );
+
+    // if (result.length < 1) {
+    //   notifyError('Please Input a Valid Coupon!');
+    //   return;
+    // }
+
+    // if (dayjs().isAfter(dayjs(result[0]?.endTime))) {
+    //   notifyError('This coupon is not valid!');
+    //   return;
+    // }
+
+    // if (total < result[0]?.minimumAmount) {
+    //   notifyError(
+    //     `Minimum ${result[0].minimumAmount} USD required for Apply this coupon!`
+    //   );
+    //   return;
+    // } else {
+    //   notifySuccess(
+    //     `Your Coupon ${result[0].title} is Applied on ${result[0].productType}!`
+    //   );
+    //   setMinimumAmount(result[0]?.minimumAmount);
+    //   setDiscountProductType(result[0].productType);
+    //   setDiscountPercentage(result[0].discountPercentage);
+    //   dispatch({ type: 'SAVE_COUPON', payload: result[0] });
+    //   Cookies.set('couponInfo', JSON.stringify(result[0]));
+    // }
   };
 
   return {

@@ -7,10 +7,13 @@ const {
   getCouponById,
   updateCoupon,
   deleteCoupon,
+  applyCoupon, 
 } = require('../controller/couponController');
 
 //add a coupon
 router.post('/add', addCoupon);
+//applay a coupon
+router.post('/apply', applyCoupon);
 
 //add multiple coupon
 router.post('/all', addAllCoupon);

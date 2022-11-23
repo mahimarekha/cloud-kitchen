@@ -8,11 +8,15 @@ const couponSchema = new mongoose.Schema(
     },
     logo: {
       type: String,
-      required: true,
+      required: false,
     },
 
     couponCode: {
       type: String,
+      required: true,
+    },
+    startTime: {
+      type: Date,
       required: true,
     },
     endTime: {
@@ -27,8 +31,13 @@ const couponSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    productType: {
-      type: String,
+    productType: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+    }],
+    status: {
+      type: Boolean,
       required: true,
     },
   },

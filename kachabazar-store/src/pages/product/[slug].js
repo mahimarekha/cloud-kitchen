@@ -42,7 +42,24 @@ const ProductScreen = ({ product, relatedProduct }) => {
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
+  const edit = (event, productId) => {
 
+
+    const productList=  productData.map((product) => {
+       
+        if (productId === product._id) {
+          product.originalPrice =  Number(event.amount);
+          product.unit = event.quantity;
+          product.price =  Number(event.amount);
+        }
+  
+        return product;
+      })
+  
+     setSortedField(productList)
+    
+      
+      }
   return (
     <>
       {isLoading ? (
@@ -244,7 +261,7 @@ const ProductScreen = ({ product, relatedProduct }) => {
                   <div className="w-full">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3 lg:gap-3">
                       {relatedProduct?.slice(1, 13).map((product, i) => (
-                        <ProductCard key={i + 1} product={product} />
+                        <ProductCard key={i + 1} product={product} edit={edit} />
                       ))}
                     </div>
                   </div>
