@@ -22,6 +22,15 @@ const vendorOrdersSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    tax:{
+      type: Number,
+      required: true,
+    },
+    deliveryDate:{
+      type: String,
+      required: false,
+    },
     discount: {
       type: Number,
       required: true,

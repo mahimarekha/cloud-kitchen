@@ -27,7 +27,9 @@ module.exports = withPWA({
       'fakestoreapi.com',
       'res.cloudinary.com',
       'lh3.googleusercontent.com',
-      '',
+      'b.zmtcdn.com',
+      'localhost',
+      'foodorder.srshta.com'
     ],
   },
 });

@@ -1,7 +1,11 @@
 const dayjs = require('dayjs');
 const Order = require('../models/Order');
+const Vendor= require('../models/Vendor')
+const {orderTempleteMail} = require('../utils/emailTemplete');
+const {adminEmail} =require('../utils/emailTemplete')
 const VendorOrders = require('../models/VendorOrders');
 var ObjectId = require('mongodb').ObjectID;
+const { signInToken, tokenForVerify, sendEmail, sendOrderEmail } = require('../config/auth');
 const getAllOrders = async (req, res) => {
   const { contact, status, page, limit, day } = req.query;
 
@@ -17,6 +21,14 @@ const getAllOrders = async (req, res) => {
   beforeToday.setDate(beforeToday.getDate() - 1);
 
   const queryObject = {};
+
+
+
+
+
+     
+    
+  
 
   if (contact) {
     queryObject.contact = { $regex: `${contact}`, $options: 'i' };
@@ -89,7 +101,8 @@ const updateOrderDetails = (req, res) => {
     {
       $set: {
         cart:req.body.cart,
-        isOrderAssign:req.body.isOrderAssign
+        isOrderAssign:req.body.isOrderAssign,
+        status:req.body.status
       },
     },
     (err) => {
@@ -132,8 +145,11 @@ const updateOrder = (req, res) => {
 };
 
 
-const updateVendorOrders = (req, res) => {
+const updateVendorOrders = async (req, res) => {
   const newStatus = req.body.status;
+
+  const order = await VendorOrders.findById(req.params.id);
+  const vendorId = await Vendor.findById(order.vendorId);
   VendorOrders.updateOne(
     {
       _id: req.params.id,
@@ -149,6 +165,29 @@ const updateVendorOrders = (req, res) => {
           message: err.message,
         });
       } else {
+        const userEmail = {
+          price: order.total,
+          date: order.deliveryDate,
+          orderId: order.orderInvoice,
+          shippingCost: order.shippingCost,
+          tax: order.tax,
+          coupon: order.discount,
+          total: order.total,
+          status:newStatus,
+          name:vendorId.orgName,
+          subTotal:order.subTotal
+        };
+        const body = {
+          from: process.env.EMAIL_USER,
+          to:  [vendorId.email,"kilarurekha@gmail.com"],
+          subject: 'Your Order Detailes',
+          
+          html: orderTempleteMail(userEmail),
+        };
+  
+        const message = 'Please check your email to verify!';
+        //res.send(body);
+        sendOrderEmail(body);
         res.status(200).send({
           message: 'Vendor Order Updated Successfully!',
         });
@@ -156,7 +195,6 @@ const updateVendorOrders = (req, res) => {
     }
   );
 };
-
 
 const deleteOrder = (req, res) => {
   Order.deleteOne({ _id: req.params.id }, (err) => {
@@ -171,7 +209,6 @@ const deleteOrder = (req, res) => {
     }
   });
 };
-
 const bestSellerProductChart = async (req, res) => {
   try {
     const totalDoc = await Order.countDocuments({});
@@ -208,8 +245,6 @@ const bestSellerProductChart = async (req, res) => {
     });
   }
 };
- 
-
 const getDashboardOrders = async (req, res) => {
   const { page, limit } = req.query;
 
@@ -320,6 +355,8 @@ const getDashboardOrders = async (req, res) => {
       {
         $group: {
           _id: null,
+
+
           total: { $sum: '$total' },
           count: {
             $sum: 1,
@@ -327,6 +364,11 @@ const getDashboardOrders = async (req, res) => {
         },
       },
     ]);
+
+
+
+  
+
 
     //weekly sale report
     // filter order data
@@ -354,6 +396,9 @@ const getDashboardOrders = async (req, res) => {
         totalProcessingOrder.length === 0 ? 0 : totalProcessingOrder[0].count,
       totalDeliveredOrder:
         totalDeliveredOrder.length === 0 ? 0 : totalDeliveredOrder[0].count,
+        completeOrder:
+        completeOrder.length === 0 ? 0 : completeOrder[0].count,
+
       orders,
       weeklySaleReport,
     });
@@ -371,6 +416,40 @@ const addOrder = async (req, res) => {
      
     // });
     const vendorOrder = await VendorOrders.insertMany(req.body);
+
+    vendorOrder.forEach(async (element) =>{
+      const orderGetDetailes= element;
+      const vendorId = await Vendor.findById(orderGetDetailes.vendorId);
+
+
+      const userEmailJson = {
+        price: orderGetDetailes.total,
+        date: orderGetDetailes.deliveryDate,
+        orderId: orderGetDetailes.orderInvoice,
+        shippingCost: orderGetDetailes.shippingCost,
+        tax: orderGetDetailes.tax,
+        coupon: orderGetDetailes.discount, 
+        total: orderGetDetailes.total,
+        status:orderGetDetailes.status,
+        name:vendorId.length ? vendorId[0].name : "",
+        subTotal:orderGetDetailes.subTotal
+      };
+      const body = {
+        from: process.env.EMAIL_USER,
+        to:  [vendorId.length ? vendorId[0].email : "","kilarurekha@gmail.com"],
+        subject:`  Order Assaigned To You ${orderGetDetailes.orderInvoice}  ` ,
+        
+        html: adminEmail(userEmailJson),
+      };
+  
+      sendOrderEmail(body);
+    } );
+
+
+   
+
+
+
     res.status(201).send(vendorOrder);
   } catch (err) {
     res.status(500).send({
@@ -415,6 +494,230 @@ const getOrdersByVendorId = async (req, res) => {
     });
   }
 };
+
+
+
+
+const getVendorOrdersById = async (req, res) => {
+    const { page, limit } = req.query;
+    const pages = Number(page) || 1;
+    const limits = Number(limit) || 8;
+    const skip = (pages - 1) * limits;
+    let week = new Date();
+    week.setDate(week.getDate() - 10);
+    const start = new Date().toDateString();
+    console.log('page, limit', page, limit);
+    try {
+      const totalDoc = await VendorOrders.countDocuments({vendorId:req.body.vendorId});
+  
+      // query for orders
+      const orders = await VendorOrders.find({vendorId:req.body.vendorId})
+        .sort({ _id: -1 })
+        .skip(skip)
+        .limit(limits);
+  
+      const totalAmount = await VendorOrders.aggregate([
+        {
+          $match: {
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            tAmount: {
+              $sum: '$total',
+            },
+          },
+        },
+      ]);
+  
+      // total order amount
+      const todayOrder = await VendorOrders.find({ createdAt: { $gte: start }, vendorId:req.body.vendorId });
+  
+      // this month order amount
+      const totalAmountOfThisMonth = await VendorOrders.aggregate([
+        {
+          $match: {
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: {
+                $year: '$createdAt',
+              },
+              month: {
+                $month: '$createdAt',
+              },
+            },
+            total: {
+              $sum: '$total',
+            },
+          },
+        },
+        {
+          $sort: { _id: -1 },
+        },
+        {
+          $limit: 1,
+        },
+      ]);
+  
+      // total padding order count
+      const totalPendingOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Pending',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+  
+      // total delivered order count
+      const totalProcessingOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Processing',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+  
+      // total delivered order count
+      const totalDeliveredOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Delivered',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+  
+
+
+      const completOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Completed',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+      const rejectedOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Rejected',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+      const acceptedOrder = await VendorOrders.aggregate([
+        {
+          $match: {
+            status: 'Accepted',
+            vendorId:ObjectId(req.body.vendorId)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$total' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+      //weekly sale report
+      // filter order data
+      const weeklySaleReport = await VendorOrders.find({
+        $or: [{ status: { $regex: `Delivered`, $options: 'i' } }],
+        createdAt: {
+          $gte: week,
+        },
+        vendorId:req.body.vendorId
+      });
+  
+      res.send({
+        totalOrder: totalDoc,
+        totalAmount:
+          totalAmount.length === 0
+            ? 0
+            : parseFloat(totalAmount[0].tAmount).toFixed(2),
+        todayOrder: todayOrder,
+        totalAmountOfThisMonth:
+          totalAmountOfThisMonth.length === 0
+            ? 0
+            : parseFloat(totalAmountOfThisMonth[0].total).toFixed(2),
+        totalPendingOrder:
+          totalPendingOrder.length === 0 ? 0 : totalPendingOrder[0],
+        totalProcessingOrder:
+          totalProcessingOrder.length === 0 ? 0 : totalProcessingOrder[0].count,
+        totalDeliveredOrder:
+          totalDeliveredOrder.length === 0 ? 0 : totalDeliveredOrder[0].count,
+          completOrder:
+          completOrder.length === 0 ? 0 :completOrder[0].count,
+          rejectedOrder:
+          rejectedOrder.length === 0 ? 0 :rejectedOrder[0].count,
+          acceptedOrder:
+          acceptedOrder.length === 0 ? 0 :acceptedOrder[0].count,
+        orders,
+        weeklySaleReport,
+      });
+    } catch (err) {
+      res.status(500).send({
+        message: err.message,
+      });
+    }
+};
 module.exports = {
   getAllOrders,
   getOrderById,
@@ -427,5 +730,6 @@ module.exports = {
   getVendorOrderById,
   updateOrderDetails,
   getOrdersByVendorId,
-  updateVendorOrders
+  updateVendorOrders,
+  getVendorOrdersById
 };

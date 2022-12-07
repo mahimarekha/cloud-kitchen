@@ -14,6 +14,7 @@ import {
   HiOutlinePhoneIncoming,
   HiOutlineShieldCheck,
   HiOutlineUserGroup,
+  HiMenuAlt1
 } from 'react-icons/hi';
 import {
   IoBagCheckOutline,
@@ -57,6 +58,12 @@ const pages = [
     title: 'Register As A Partner',
     href: '/vendor-registrationform',
     icon: HiOutlineUserGroup,
+  },
+  {
+    title: 'Menu',
+    href: '/menu',
+    icon: HiMenuAlt1,
+    
   },
   {
     title: 'Privacy Policy',

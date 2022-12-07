@@ -13,6 +13,7 @@ const {
   updateOrderDetails,
   getOrdersByVendorId,
   updateVendorOrders,
+  getVendorOrdersById
   // getRecentOrders,
  
 } = require('../controller/orderController');
@@ -46,4 +47,6 @@ router.post('/addvendororders', addOrder);
 router.get('/vendororder/:orderId', getVendorOrderById);
 
 router.get('/order/:vendorid', getOrdersByVendorId);
+
+router.post('/getvendororders', getVendorOrdersById);
 module.exports = router;

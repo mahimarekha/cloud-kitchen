@@ -1,7 +1,8 @@
 require('dotenv').config();
 const stripe = require('stripe')(`${process.env.STRIPE_KEY}` || null); /// use hardcoded key if env not work
-
+const {userEmail} =require('../utils/emailTemplete')
 const mongoose = require('mongoose');
+const { signInToken, tokenForVerify, sendEmail, sendOrderEmail } = require('../config/auth');
 
 const Order = require('../models/Order');
 const {
@@ -15,7 +16,34 @@ const addOrder = async (req, res) => {
       ...req.body,
       user: req.user._id,
     });
+
+    const orderGetDetailes = req.body;
+
     const order = await newOrder.save();
+    const userEmailJson = {
+      price: orderGetDetailes.total,
+      date: orderGetDetailes.deliveryDate,
+      orderId: order.invoice,
+      shippingCost: orderGetDetailes.shippingCost,
+      tax: orderGetDetailes.tax,
+      coupon: orderGetDetailes.discount, 
+      total: orderGetDetailes.total,
+      status:orderGetDetailes.status,
+      name:orderGetDetailes.name,
+      subTotal:orderGetDetailes.subTotal
+    };
+    const body = {
+      from: process.env.EMAIL_USER,
+      to:  [orderGetDetailes.email,"kilarurekha@gmail.com"],
+      subject:` Your Order Placed succesfully ${order.invoice}  ` ,
+      
+      html: userEmail(userEmailJson),
+    };
+
+    const message = 'Please check your email to verify!';
+    //res.send(body);
+    sendOrderEmail(body);
+
     res.status(201).send(order);
     handleProductQuantity(order.cart);
   } catch (err) {
